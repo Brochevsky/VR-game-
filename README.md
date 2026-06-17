@@ -126,16 +126,56 @@
             100% { transform: scale(1.1); }
         }
 
+        /* ============================================================
+           СООБЩЕНИЕ О ПОВОРОТЕ ТЕЛЕФОНА
+           ============================================================ */
+        #rotateMessage {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            font-size: 22px;
+            text-align: center;
+            padding: 30px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        #rotateMessage .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotatePhone 2s ease-in-out infinite;
+        }
+        #rotateMessage strong {
+            color: #ffcc44;
+        }
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
         @media (max-width: 600px) {
             #menu button { font-size: 14px; padding: 10px 12px; min-width: 80px; }
             #scoreDisplay { font-size: 18px; padding: 4px 14px; }
             #hint { font-size: 14px; padding: 6px 16px; }
             #winOverlay h1 { font-size: 42px; }
             #winOverlay p { font-size: 24px; }
+            #rotateMessage { font-size: 18px; }
+            #rotateMessage .icon { font-size: 60px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- СООБЩЕНИЕ О ПОВОРОТЕ -->
+    <div id="rotateMessage">
+        <div class="icon">📱</div>
+        <div>Пожалуйста, поверни телефон<br><strong>вертикально</strong></div>
+    </div>
 
     <div id="menu">
         <button id="mode1" class="active">🦎 Покорми ящерицу</button>
@@ -154,6 +194,30 @@
     </div>
 
     <script>
+        // ============================================================
+        //  БЛОКИРОВКА ОРИЕНТАЦИИ ЭКРАНА
+        // ============================================================
+        const rotateMessage = document.getElementById('rotateMessage');
+
+        function checkOrientation() {
+            if (window.innerHeight < window.innerWidth) {
+                rotateMessage.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                rotateMessage.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        window.addEventListener('load', checkOrientation);
+        window.addEventListener('resize', checkOrientation);
+
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').catch(() => {});
+            }
+        } catch(e) {}
+
         // ============================================================
         //  ЗВУКИ (Web Audio)
         // ============================================================
@@ -227,7 +291,6 @@
                 } catch(e) {}
             }
 
-            // Звук смены цвета (весёлый)
             colorChange() {
                 if (!this.enabled || !this.ctx) return;
                 try {
@@ -281,7 +344,7 @@
         let frameId = null;
 
         // ============================================================
-        //  РЕЖИМ 1 — ЯЩЕРИЦА (реалистичная + смена цвета)
+        //  РЕЖИМ 1 — ЯЩЕРИЦА
         // ============================================================
         let lizard = {
             x: 0, y: 0,
@@ -291,29 +354,17 @@
             color: '#4CAF50',
             happy: false,
             happyTimer: 0,
-            // Для смены цвета
             eatCount: 0,
             colorChangeTimer: 0,
             colorChanging: false
         };
         let flies = [];
 
-        // Яркие цвета для ящерицы
         const LIZARD_COLORS = [
-            '#4CAF50', // зелёный
-            '#e74c3c', // красный
-            '#3498db', // синий
-            '#f39c12', // оранжевый
-            '#9b59b6', // фиолетовый
-            '#1abc9c', // бирюзовый
-            '#e67e22', // морковный
-            '#e84393', // розовый
-            '#00b894', // изумрудный
-            '#6c5ce7', // индиго
-            '#fd79a8', // нежно-розовый
-            '#fdcb6e'  // золотой
+            '#4CAF50', '#e74c3c', '#3498db', '#f39c12',
+            '#9b59b6', '#1abc9c', '#e67e22', '#e84393',
+            '#00b894', '#6c5ce7', '#fd79a8', '#fdcb6e'
         ];
-        let colorIndex = 0;
 
         function initLizard() {
             lizard.x = W * 0.5;
@@ -328,7 +379,6 @@
             lizard.eatCount = 0;
             lizard.colorChanging = false;
             lizard.colorChangeTimer = 0;
-            colorIndex = 0;
             flies = [];
             for (let i = 0; i < 5; i++) {
                 flies.push({
@@ -365,7 +415,6 @@
                     lizard.happyTimer = 0;
                 }
             }
-            // Анимация смены цвета (мигание)
             if (lizard.colorChanging) {
                 lizard.colorChangeTimer++;
                 if (lizard.colorChangeTimer > 30) {
@@ -379,20 +428,16 @@
             const l = lizard;
             ctx.save();
 
-            // Если идёт смена цвета — делаем пульсацию
             let currentColor = l.color;
             if (l.colorChanging) {
-                // Мигаем белым
                 const flash = Math.sin(l.colorChangeTimer * 0.5) > 0;
-                if (flash) {
-                    currentColor = '#ffffff';
-                }
+                if (flash) currentColor = '#ffffff';
             }
 
             ctx.shadowColor = 'rgba(0,0,0,0.15)';
             ctx.shadowBlur = 20;
 
-            // ---- Хвост ----
+            // Хвост
             ctx.beginPath();
             ctx.moveTo(l.x - 40, l.y + 5);
             ctx.quadraticCurveTo(l.x - 70, l.y - 15, l.x - 90, l.y + 10);
@@ -403,7 +448,7 @@
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // ---- Тело ----
+            // Тело
             ctx.beginPath();
             ctx.ellipse(l.x, l.y, 45, 30, 0, 0, Math.PI * 2);
             ctx.fillStyle = currentColor;
@@ -412,14 +457,14 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // ---- Голова ----
+            // Голова
             ctx.beginPath();
             ctx.ellipse(l.x + 40, l.y - 5, 25, 22, 0.2, 0, Math.PI * 2);
             ctx.fillStyle = currentColor;
             ctx.fill();
             ctx.stroke();
 
-            // ---- Глаза ----
+            // Глаза
             ctx.shadowBlur = 0;
             ctx.beginPath();
             ctx.ellipse(l.x + 46, l.y - 14, 8, 9, 0, 0, Math.PI * 2);
@@ -451,14 +496,14 @@
             ctx.fillStyle = 'white';
             ctx.fill();
 
-            // ---- Рот ----
+            // Рот
             ctx.beginPath();
             ctx.arc(l.x + 42, l.y + 2, 10, 0.1, Math.PI - 0.1);
             ctx.strokeStyle = '#2E7D32';
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // ---- Язык ----
+            // Язык
             if (l.tongueOut) {
                 ctx.beginPath();
                 ctx.moveTo(l.x + 48, l.y + 4);
@@ -472,16 +517,11 @@
                 ctx.fill();
             }
 
-            // ---- Лапки ----
+            // Лапки
             ctx.fillStyle = currentColor;
             ctx.strokeStyle = '#2E7D32';
             ctx.lineWidth = 1.5;
-            const paws = [
-                [-25, 28, -0.2],
-                [-10, 30, 0.2],
-                [10, 30, -0.2],
-                [25, 28, 0.2]
-            ];
+            const paws = [[-25, 28, -0.2], [-10, 30, 0.2], [10, 30, -0.2], [25, 28, 0.2]];
             for (let [dx, dy, rot] of paws) {
                 ctx.beginPath();
                 ctx.ellipse(l.x + dx, l.y + dy, 7, 4, rot, 0, Math.PI * 2);
@@ -495,7 +535,7 @@
                 }
             }
 
-            // ---- Чешуйки ----
+            // Чешуйки
             ctx.shadowBlur = 0;
             for (let i = 0; i < 6; i++) {
                 const angle = i / 6 * Math.PI * 2;
@@ -509,7 +549,7 @@
 
             ctx.restore();
 
-            // ---- Мухи (смайлики) ----
+            // Мухи
             for (let f of flies) {
                 if (!f.alive) continue;
                 ctx.save();
@@ -522,7 +562,7 @@
                 ctx.restore();
             }
 
-            // ---- Звёзды счастья ----
+            // Звёзды счастья
             if (l.happy) {
                 ctx.save();
                 ctx.font = '36px Arial';
@@ -535,7 +575,7 @@
                 ctx.restore();
             }
 
-            // ---- Счётчик съеденных мух (под ящерицей) ----
+            // Счётчик съеденных мух
             ctx.save();
             ctx.font = '20px Arial';
             ctx.textAlign = 'center';
@@ -544,9 +584,7 @@
             ctx.restore();
         }
 
-        // Смена цвета ящерицы
         function changeLizardColor() {
-            // Выбираем случайный цвет, не такой как текущий
             let newColor;
             let attempts = 0;
             do {
@@ -554,13 +592,10 @@
                 newColor = LIZARD_COLORS[idx];
                 attempts++;
             } while (newColor === lizard.color && attempts < 20);
-
             lizard.color = newColor;
             lizard.colorChanging = true;
             lizard.colorChangeTimer = 0;
             sound.colorChange();
-
-            // Показываем сообщение о смене цвета (через звёзды)
             lizard.happy = true;
             lizard.happyTimer = 0;
         }
@@ -586,12 +621,10 @@
                     lizard.tongueTimer = 0;
                     lizard.happy = true;
                     lizard.happyTimer = 0;
-                    // Увеличиваем счётчик съеденных мух
                     lizard.eatCount++;
                     score++;
                     updateScore();
 
-                    // Проверяем: каждые 10 мух — смена цвета!
                     if (lizard.eatCount % 10 === 0) {
                         changeLizardColor();
                     }
@@ -614,7 +647,7 @@
         }
 
         // ============================================================
-        //  РЕЖИМ 2 — 20 шариков (авторестарт)
+        //  РЕЖИМ 2 — 20 ШАРИКОВ
         // ============================================================
         let balloons2 = [];
         let winMode2 = false;
@@ -708,7 +741,7 @@
         }
 
         // ============================================================
-        //  РЕЖИМ 3 — Шарики в небо
+        //  РЕЖИМ 3 — ШАРИКИ В НЕБО
         // ============================================================
         let balloons3 = [];
 
@@ -805,7 +838,7 @@
         }
 
         // ============================================================
-        //  ОБРАБОТЧИКИ СОБЫТИЙ
+        //  ОБРАБОТЧИКИ
         // ============================================================
         function handleStart(e) {
             e.preventDefault();
