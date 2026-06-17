@@ -6,95 +6,128 @@
     <title>Игры для малышей</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; touch-action: none; }
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #1a2a3a;
             font-family: 'Segoe UI', Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
 
+        /* Блокируем вертикальный режим */
+        #rotateMessage {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+        }
+        #rotateMessage .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotatePhone 2s ease-in-out infinite;
+        }
+        @keyframes rotatePhone {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Основное меню — сверху, но в ландшафте */
         #menu {
             background: #2a4a5a;
-            padding: 15px;
+            padding: 8px 10px;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 8px;
+            flex-wrap: nowrap;
             border-bottom: 3px solid #ffcc44;
             flex-shrink: 0;
             z-index: 100;
+            width: 100%;
+            position: relative;
         }
         #menu button {
             background: #ffcc44;
             border: none;
             border-radius: 30px;
-            padding: 12px 24px;
-            font-size: 18px;
+            padding: 8px 14px;
+            font-size: 14px;
             font-weight: bold;
             color: #1a2a3a;
             cursor: pointer;
             transition: 0.2s;
-            box-shadow: 0 4px 0 #b38822;
+            box-shadow: 0 3px 0 #b38822;
             touch-action: manipulation;
             flex: 1;
-            min-width: 100px;
-            max-width: 200px;
+            max-width: 180px;
+            white-space: nowrap;
         }
         #menu button:active {
-            transform: translateY(4px);
+            transform: translateY(3px);
             box-shadow: 0 0 0 #b38822;
         }
         #menu button.active {
             background: #88ddff;
-            box-shadow: 0 4px 0 #44aadd;
+            box-shadow: 0 3px 0 #44aadd;
         }
 
+        /* Игровой контейнер — на весь остаток экрана */
         #gameContainer {
             flex: 1;
             position: relative;
             overflow: hidden;
             background: #87CEEB;
+            width: 100%;
+            height: calc(100% - 50px); /* отнимаем высоту меню */
         }
 
         canvas {
             display: block;
-            width: 100%;
-            height: 100%;
+            width: 100% !important;
+            height: 100% !important;
             background: transparent;
             touch-action: none;
         }
 
         #hint {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.6);
             color: white;
-            padding: 10px 24px;
+            padding: 8px 20px;
             border-radius: 30px;
-            font-size: 18px;
+            font-size: 16px;
             pointer-events: none;
             white-space: nowrap;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255,255,255,0.2);
+            z-index: 10;
         }
 
         #scoreDisplay {
             position: absolute;
-            top: 20px;
+            top: 15px;
             right: 20px;
             background: rgba(0,0,0,0.5);
             color: #ffdd44;
-            padding: 8px 18px;
+            padding: 6px 16px;
             border-radius: 20px;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             pointer-events: none;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255,255,255,0.2);
+            z-index: 10;
         }
 
         #winOverlay {
@@ -110,13 +143,13 @@
         }
         #winOverlay.show { display: flex; }
         #winOverlay h1 {
-            font-size: 64px;
+            font-size: 56px;
             color: #ffdd44;
             text-shadow: 0 0 40px rgba(255,220,68,0.6);
             animation: bounce 0.8s ease infinite alternate;
         }
         #winOverlay p {
-            font-size: 32px;
+            font-size: 28px;
             color: white;
             margin-top: 10px;
             text-shadow: 0 0 20px rgba(0,0,0,0.5);
@@ -126,46 +159,20 @@
             100% { transform: scale(1.1); }
         }
 
-        /* ============================================================
-           СООБЩЕНИЕ О ПОВОРОТЕ ТЕЛЕФОНА
-           ============================================================ */
-        #rotateMessage {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.92);
-            color: white;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 9999;
-            font-size: 22px;
-            text-align: center;
-            padding: 30px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        #rotateMessage .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: rotatePhone 2s ease-in-out infinite;
-        }
-        #rotateMessage strong {
-            color: #ffcc44;
-        }
-        @keyframes rotatePhone {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
-            100% { transform: rotate(0deg); }
-        }
-
-        @media (max-width: 600px) {
-            #menu button { font-size: 14px; padding: 10px 12px; min-width: 80px; }
-            #scoreDisplay { font-size: 18px; padding: 4px 14px; }
-            #hint { font-size: 14px; padding: 6px 16px; }
-            #winOverlay h1 { font-size: 42px; }
-            #winOverlay p { font-size: 24px; }
+        @media (max-width: 700px) {
+            #menu button { font-size: 12px; padding: 6px 10px; }
+            #hint { font-size: 13px; padding: 5px 14px; bottom: 10px; }
+            #scoreDisplay { font-size: 18px; padding: 4px 12px; top: 10px; right: 12px; }
+            #winOverlay h1 { font-size: 38px; }
+            #winOverlay p { font-size: 20px; }
             #rotateMessage { font-size: 18px; }
             #rotateMessage .icon { font-size: 60px; }
+        }
+        @media (max-height: 500px) {
+            #menu { padding: 4px 8px; }
+            #menu button { font-size: 11px; padding: 4px 8px; }
+            #hint { font-size: 11px; padding: 3px 10px; bottom: 5px; }
+            #scoreDisplay { font-size: 14px; padding: 2px 10px; top: 5px; right: 8px; }
         }
     </style>
 </head>
@@ -174,12 +181,12 @@
     <!-- СООБЩЕНИЕ О ПОВОРОТЕ -->
     <div id="rotateMessage">
         <div class="icon">📱</div>
-        <div>Пожалуйста, поверни телефон<br><strong>вертикально</strong></div>
+        <div>Пожалуйста, поверни телефон<br><strong>горизонтально</strong></div>
     </div>
 
     <div id="menu">
-        <button id="mode1" class="active">🦎 Покорми ящерицу</button>
-        <button id="mode2">🎈 Лопни 20 шариков</button>
+        <button id="mode1" class="active">🦎 Корми ящерицу</button>
+        <button id="mode2">🎈 Лопни 20</button>
         <button id="mode3">☁️ Шарики в небо</button>
     </div>
 
@@ -195,31 +202,33 @@
 
     <script>
         // ============================================================
-        //  БЛОКИРОВКА ОРИЕНТАЦИИ ЭКРАНА
+        //  БЛОКИРОВКА ОРИЕНТАЦИИ (ТОЛЬКО ЛАНДШАФТ)
         // ============================================================
         const rotateMessage = document.getElementById('rotateMessage');
 
         function checkOrientation() {
-            if (window.innerHeight < window.innerWidth) {
+            // Если высота больше ширины — телефон вертикально (показываем предупреждение)
+            if (window.innerHeight > window.innerWidth) {
                 rotateMessage.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             } else {
                 rotateMessage.style.display = 'none';
-                document.body.style.overflow = 'auto';
+                document.body.style.overflow = 'hidden';
             }
         }
 
         window.addEventListener('load', checkOrientation);
         window.addEventListener('resize', checkOrientation);
 
+        // Принудительно блокируем ландшафт
         try {
             if (screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('portrait').catch(() => {});
+                screen.orientation.lock('landscape').catch(() => {});
             }
         } catch(e) {}
 
         // ============================================================
-        //  ЗВУКИ (Web Audio)
+        //  ЗВУКИ
         // ============================================================
         class SoundFX {
             constructor() {
@@ -231,13 +240,9 @@
                     this.enabled = false;
                 }
             }
-
             resume() {
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume();
-                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
             }
-
             slurp() {
                 if (!this.enabled || !this.ctx) return;
                 try {
@@ -254,7 +259,6 @@
                     osc.stop(this.ctx.currentTime + 0.15);
                 } catch(e) {}
             }
-
             pop() {
                 if (!this.enabled || !this.ctx) return;
                 try {
@@ -271,7 +275,6 @@
                     osc.stop(this.ctx.currentTime + 0.08);
                 } catch(e) {}
             }
-
             win() {
                 if (!this.enabled || !this.ctx) return;
                 try {
@@ -290,7 +293,6 @@
                     }
                 } catch(e) {}
             }
-
             colorChange() {
                 if (!this.enabled || !this.ctx) return;
                 try {
@@ -367,9 +369,9 @@
         ];
 
         function initLizard() {
-            lizard.x = W * 0.5;
+            lizard.x = W * 0.4;
             lizard.y = H * 0.6;
-            lizard.mouthX = lizard.x + 40;
+            lizard.mouthX = lizard.x + 45;
             lizard.mouthY = lizard.y - 10;
             lizard.tongueOut = false;
             lizard.tongueTimer = 0;
@@ -382,9 +384,9 @@
             flies = [];
             for (let i = 0; i < 5; i++) {
                 flies.push({
-                    x: 50 + Math.random() * (W - 100),
-                    y: 50 + Math.random() * (H * 0.4),
-                    r: 20,
+                    x: W * 0.6 + Math.random() * W * 0.3,
+                    y: 50 + Math.random() * (H * 0.5),
+                    r: 22,
                     vx: (Math.random() - 0.5) * 2,
                     vy: (Math.random() - 0.5) * 2,
                     alive: true,
@@ -398,8 +400,8 @@
                 if (!f.alive) continue;
                 f.x += f.vx;
                 f.y += f.vy;
-                if (f.x < 30 || f.x > W - 30) f.vx *= -1;
-                if (f.y < 30 || f.y > H * 0.5) f.vy *= -1;
+                if (f.x < W * 0.3 || f.x > W - 30) f.vx *= -1;
+                if (f.y < 30 || f.y > H * 0.6) f.vy *= -1;
             }
             if (lizard.tongueOut) {
                 lizard.tongueTimer++;
@@ -439,9 +441,9 @@
 
             // Хвост
             ctx.beginPath();
-            ctx.moveTo(l.x - 40, l.y + 5);
-            ctx.quadraticCurveTo(l.x - 70, l.y - 15, l.x - 90, l.y + 10);
-            ctx.quadraticCurveTo(l.x - 70, l.y + 25, l.x - 40, l.y + 10);
+            ctx.moveTo(l.x - 45, l.y + 5);
+            ctx.quadraticCurveTo(l.x - 80, l.y - 15, l.x - 100, l.y + 10);
+            ctx.quadraticCurveTo(l.x - 80, l.y + 25, l.x - 45, l.y + 10);
             ctx.fillStyle = currentColor;
             ctx.fill();
             ctx.strokeStyle = '#2E7D32';
@@ -450,7 +452,7 @@
 
             // Тело
             ctx.beginPath();
-            ctx.ellipse(l.x, l.y, 45, 30, 0, 0, Math.PI * 2);
+            ctx.ellipse(l.x, l.y, 50, 32, 0, 0, Math.PI * 2);
             ctx.fillStyle = currentColor;
             ctx.fill();
             ctx.strokeStyle = '#2E7D32';
@@ -459,46 +461,48 @@
 
             // Голова
             ctx.beginPath();
-            ctx.ellipse(l.x + 40, l.y - 5, 25, 22, 0.2, 0, Math.PI * 2);
+            ctx.ellipse(l.x + 45, l.y - 5, 28, 24, 0.2, 0, Math.PI * 2);
             ctx.fillStyle = currentColor;
             ctx.fill();
             ctx.stroke();
 
             // Глаза
             ctx.shadowBlur = 0;
+            // Левый глаз
             ctx.beginPath();
-            ctx.ellipse(l.x + 46, l.y - 14, 8, 9, 0, 0, Math.PI * 2);
+            ctx.ellipse(l.x + 52, l.y - 16, 10, 11, 0, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
             ctx.strokeStyle = '#2E7D32';
             ctx.lineWidth = 1.5;
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(l.x + 50, l.y - 16, 4, 0, Math.PI * 2);
+            ctx.arc(l.x + 57, l.y - 18, 5, 0, Math.PI * 2);
             ctx.fillStyle = '#1a1a2e';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(l.x + 51, l.y - 17, 1.5, 0, Math.PI * 2);
+            ctx.arc(l.x + 58, l.y - 19, 2, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
 
+            // Правый глаз
             ctx.beginPath();
-            ctx.ellipse(l.x + 34, l.y - 16, 7, 8, 0, 0, Math.PI * 2);
+            ctx.ellipse(l.x + 38, l.y - 18, 9, 10, 0, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(l.x + 38, l.y - 18, 3.5, 0, Math.PI * 2);
+            ctx.arc(l.x + 43, l.y - 20, 4.5, 0, Math.PI * 2);
             ctx.fillStyle = '#1a1a2e';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(l.x + 39, l.y - 19, 1.2, 0, Math.PI * 2);
+            ctx.arc(l.x + 44, l.y - 21, 1.8, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
 
             // Рот
             ctx.beginPath();
-            ctx.arc(l.x + 42, l.y + 2, 10, 0.1, Math.PI - 0.1);
+            ctx.arc(l.x + 47, l.y + 2, 12, 0.1, Math.PI - 0.1);
             ctx.strokeStyle = '#2E7D32';
             ctx.lineWidth = 2;
             ctx.stroke();
@@ -506,13 +510,13 @@
             // Язык
             if (l.tongueOut) {
                 ctx.beginPath();
-                ctx.moveTo(l.x + 48, l.y + 4);
-                ctx.quadraticCurveTo(l.x + 70, l.y - 10, l.x + 85, l.y + 2);
+                ctx.moveTo(l.x + 54, l.y + 4);
+                ctx.quadraticCurveTo(l.x + 80, l.y - 12, l.x + 95, l.y + 2);
                 ctx.strokeStyle = '#e74c3c';
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 5;
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.arc(l.x + 85, l.y + 2, 5, 0, Math.PI * 2);
+                ctx.arc(l.x + 95, l.y + 2, 6, 0, Math.PI * 2);
                 ctx.fillStyle = '#e74c3c';
                 ctx.fill();
             }
@@ -521,15 +525,20 @@
             ctx.fillStyle = currentColor;
             ctx.strokeStyle = '#2E7D32';
             ctx.lineWidth = 1.5;
-            const paws = [[-25, 28, -0.2], [-10, 30, 0.2], [10, 30, -0.2], [25, 28, 0.2]];
+            const paws = [
+                [-30, 30, -0.2],
+                [-12, 32, 0.2],
+                [12, 32, -0.2],
+                [30, 30, 0.2]
+            ];
             for (let [dx, dy, rot] of paws) {
                 ctx.beginPath();
-                ctx.ellipse(l.x + dx, l.y + dy, 7, 4, rot, 0, Math.PI * 2);
+                ctx.ellipse(l.x + dx, l.y + dy, 8, 5, rot, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
                 for (let i = -1; i <= 1; i++) {
                     ctx.beginPath();
-                    ctx.arc(l.x + dx + i * 4, l.y + dy + 5, 2.5, 0, Math.PI * 2);
+                    ctx.arc(l.x + dx + i * 5, l.y + dy + 6, 3, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
                 }
@@ -539,11 +548,11 @@
             ctx.shadowBlur = 0;
             for (let i = 0; i < 6; i++) {
                 const angle = i / 6 * Math.PI * 2;
-                const cx = l.x + Math.cos(angle) * 25;
-                const cy = l.y + Math.sin(angle) * 15;
+                const cx = l.x + Math.cos(angle) * 28;
+                const cy = l.y + Math.sin(angle) * 16;
                 ctx.beginPath();
-                ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(46, 125, 50, 0.3)';
+                ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(46, 125, 50, 0.25)';
                 ctx.fill();
             }
 
@@ -553,11 +562,11 @@
             for (let f of flies) {
                 if (!f.alive) continue;
                 ctx.save();
-                ctx.font = `${f.r * 1.8}px Arial`;
+                ctx.font = `${f.r * 2}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.shadowColor = 'rgba(0,0,0,0.15)';
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 15;
                 ctx.fillText(f.emoji, f.x, f.y);
                 ctx.restore();
             }
@@ -565,22 +574,22 @@
             // Звёзды счастья
             if (l.happy) {
                 ctx.save();
-                ctx.font = '36px Arial';
+                ctx.font = '40px Arial';
                 ctx.textAlign = 'center';
                 ctx.shadowColor = 'rgba(255,220,68,0.5)';
                 ctx.shadowBlur = 30;
-                ctx.fillText('⭐', l.x - 50, l.y - 40);
-                ctx.fillText('✨', l.x + 70, l.y - 50);
-                ctx.fillText('🌟', l.x + 10, l.y - 60);
+                ctx.fillText('⭐', l.x - 60, l.y - 50);
+                ctx.fillText('✨', l.x + 80, l.y - 60);
+                ctx.fillText('🌟', l.x + 10, l.y - 70);
                 ctx.restore();
             }
 
-            // Счётчик съеденных мух
+            // Счётчик
             ctx.save();
-            ctx.font = '20px Arial';
+            ctx.font = '22px Arial';
             ctx.textAlign = 'center';
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillText('🐛 Съедено: ' + lizard.eatCount, l.x, l.y + 55);
+            ctx.fillText('🐛 Съедено: ' + lizard.eatCount, l.x, l.y + 60);
             ctx.restore();
         }
 
@@ -603,7 +612,7 @@
         function checkEatFly(mx, my) {
             const l = lizard;
             const mouthDist = Math.hypot(mx - l.mouthX, my - (l.mouthY + 4));
-            if (mouthDist < 40) {
+            if (mouthDist < 45) {
                 let closest = null;
                 let closestDist = Infinity;
                 for (let f of flies) {
@@ -614,7 +623,7 @@
                         closest = f;
                     }
                 }
-                if (closest && closestDist < 60) {
+                if (closest && closestDist < 65) {
                     closest.alive = false;
                     sound.slurp();
                     lizard.tongueOut = true;
@@ -631,9 +640,9 @@
 
                     setTimeout(() => {
                         flies.push({
-                            x: 50 + Math.random() * (W - 100),
-                            y: 50 + Math.random() * (H * 0.4),
-                            r: 20,
+                            x: W * 0.6 + Math.random() * W * 0.3,
+                            y: 50 + Math.random() * (H * 0.5),
+                            r: 22,
                             vx: (Math.random() - 0.5) * 2,
                             vy: (Math.random() - 0.5) * 2,
                             alive: true,
@@ -659,8 +668,8 @@
             for (let i = 0; i < 15; i++) {
                 balloons2.push({
                     x: 30 + Math.random() * (W - 60),
-                    y: 30 + Math.random() * (H - 120),
-                    r: 25 + Math.random() * 20,
+                    y: 30 + Math.random() * (H - 80),
+                    r: 25 + Math.random() * 22,
                     color: `hsl(${Math.random() * 360}, 90%, 60%)`,
                     vy: 0.3 + Math.random() * 0.5,
                     popped: false
@@ -730,7 +739,7 @@
                             b.x = 30 + Math.random() * (W - 60);
                             b.y = H + 20;
                             b.color = `hsl(${Math.random() * 360}, 90%, 60%)`;
-                            b.r = 25 + Math.random() * 20;
+                            b.r = 25 + Math.random() * 22;
                             b.vy = 0.3 + Math.random() * 0.5;
                         }
                     }, 300);
@@ -751,10 +760,10 @@
                 balloons3.push({
                     x: Math.random() * W,
                     y: H + 30 + Math.random() * 100,
-                    r: 20 + Math.random() * 18,
+                    r: 22 + Math.random() * 20,
                     color: `hsl(${Math.random() * 360}, 85%, 65%)`,
-                    vy: 0.5 + Math.random() * 1.2,
-                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: 0.8 + Math.random() * 1.5,
+                    vx: (Math.random() - 0.5) * 0.8,
                     popped: false
                 });
             }
@@ -769,7 +778,7 @@
                     b.y = H + 30;
                     b.x = Math.random() * W;
                     b.color = `hsl(${Math.random() * 360}, 85%, 65%)`;
-                    b.r = 20 + Math.random() * 18;
+                    b.r = 22 + Math.random() * 20;
                 }
                 if (b.x < 10 || b.x > W - 10) b.vx *= -1;
             }
@@ -811,9 +820,9 @@
                         b.y = H + 30;
                         b.x = Math.random() * W;
                         b.color = `hsl(${Math.random() * 360}, 85%, 65%)`;
-                        b.r = 20 + Math.random() * 18;
-                        b.vy = 0.5 + Math.random() * 1.2;
-                        b.vx = (Math.random() - 0.5) * 0.5;
+                        b.r = 22 + Math.random() * 20;
+                        b.vy = 0.8 + Math.random() * 1.5;
+                        b.vx = (Math.random() - 0.5) * 0.8;
                     }, 200);
                     return true;
                 }
@@ -934,17 +943,19 @@
             ctx.clearRect(0, 0, W, H);
 
             if (currentMode === 1) {
+                // --- Фон для ящерицы (ландшафтный) ---
                 const grad = ctx.createLinearGradient(0, 0, 0, H);
                 grad.addColorStop(0, '#87CEEB');
-                grad.addColorStop(0.5, '#A8D5BA');
+                grad.addColorStop(0.45, '#A8D5BA');
                 grad.addColorStop(1, '#6B8E6B');
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, W, H);
+                // Солнце справа
                 ctx.save();
                 ctx.shadowColor = 'rgba(255,220,50,0.3)';
-                ctx.shadowBlur = 40;
+                ctx.shadowBlur = 50;
                 ctx.beginPath();
-                ctx.arc(W - 60, 60, 40, 0, Math.PI * 2);
+                ctx.arc(W - 70, 70, 50, 0, Math.PI * 2);
                 ctx.fillStyle = '#FFD700';
                 ctx.fill();
                 ctx.restore();
@@ -954,13 +965,13 @@
                 ctx.fillRect(0, 0, W, H);
                 ctx.save();
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                for (let i = 0; i < 4; i++) {
-                    const cx = (i * 250 + 40) % W;
-                    const cy = 30 + i * 20 % 60;
+                for (let i = 0; i < 5; i++) {
+                    const cx = (i * 200 + 40) % W;
+                    const cy = 30 + i * 15 % 50;
                     ctx.beginPath();
-                    ctx.arc(cx, cy, 40, 0, Math.PI * 2);
-                    ctx.arc(cx + 35, cy - 10, 35, 0, Math.PI * 2);
-                    ctx.arc(cx - 30, cy + 5, 30, 0, Math.PI * 2);
+                    ctx.arc(cx, cy, 45, 0, Math.PI * 2);
+                    ctx.arc(cx + 40, cy - 12, 38, 0, Math.PI * 2);
+                    ctx.arc(cx - 35, cy + 5, 32, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 ctx.restore();
@@ -973,9 +984,9 @@
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, W, H);
                 ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                for (let i = 0; i < 30; i++) {
+                for (let i = 0; i < 40; i++) {
                     ctx.beginPath();
-                    ctx.arc((i * 137 + 50) % W, (i * 97 + 30) % (H * 0.4), 1.5, 0, Math.PI * 2);
+                    ctx.arc((i * 137 + 50) % W, (i * 97 + 30) % (H * 0.4), 1.8, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 drawMode3();
@@ -990,7 +1001,7 @@
         setMode(1);
         gameLoop();
 
-        console.log('🎮 Игры для малышей запущены!');
+        console.log('🎮 Игры для малышей (горизонтальный режим) запущены!');
     </script>
 </body>
 </html>
